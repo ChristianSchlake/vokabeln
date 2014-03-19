@@ -32,7 +32,7 @@
 	<meta http-equiv="content-type" content="text/html; charset=utf8"/>
 	<meta name="viewport" content="width=device-width">
 
-	<title>Finanzen</title>
+	<title>Vokabeln</title>
 	<link rel="stylesheet" href="css/foundation.css">
 	<link rel="stylesheet" href="icons/foundation-icons.css"/>
 	
@@ -71,8 +71,11 @@
 */
 	$neuerSatz=0;
 	$neueVokabel=0;
+	$suchEintrag=0;
 	$deutsch="";
 	$englisch="";
+	$sortBy="DESC";
+	$sort="englisch";
 	foreach ($_POST as $key => $value) {
 		if ($key=="uebergabe") {
 			switch ($value) {
@@ -81,6 +84,8 @@
 					break;
 				case "neueVokabel":
 					$neueVokabel=1;
+				case "neueVokabel":
+					$suchEintrag=1;
 					break;
 			}
 		}
@@ -90,17 +95,19 @@
 		if ($key=="zeiten") {$zeiten=$value;}
 		if ($key=="verben") {$verben=$value;}
 	}
-	/*
+	
 	foreach ($_GET as $key => $value) {
-		if ($key=="uebergabe" AND $value=="suchEintrag") {$suchEintrag=1;}
+//		if ($key=="uebergabe" AND $value=="suchEintrag") {$suchEintrag=1;}
 		if ($key=="sort") {$sort=$value;}
 		if ($key=="sortBy") {$sortBy=$value;}
-		if ($key=="datum") {$_SESSION['datum'] = $value;}
-		if ($key=="verwendung") {$_SESSION['verwendung'] = $value;}
-		if ($key=="konto") {$_SESSION['konto'] = $value;}
-		if ($key=="betrag") {$_SESSION['betrag'] = $value;}
 		if ($key=="startPage") {$_SESSION['startPage'] = $value;}
-		if ($key=="id") {$_SESSION['id'] = $value;}		
+		if ($key=="suchEintrag") {$_SESSION['startPage'] = $value;}
+//		if ($key=="datum") {$_SESSION['datum'] = $value;}
+/*		if ($key=="verwendung") {$_SESSION['verwendung'] = $value;}
+		if ($key=="konto") {$_SESSION['konto'] = $value;}
+		if ($key=="betrag") {$_SESSION['betrag'] = $value;}		
+		if ($key=="id") {$_SESSION['id'] = $value;}
+*/
 	}
 
 	switch ($sortBy) {
@@ -111,25 +118,50 @@
 			$sortBy="ASC";
 			break;
 	}
-*/
 
-// Neuer Eintrag
-	if ($neuerSatz==1) {
+
+// Neuer Satz
+	if ($neuerSatz==1) {				
 		$aufruf="INSERT INTO saetze (deutsch,englisch) VALUES (\"".$deutsch."\",\"".$englisch."\")";
-//		echo $aufruf;
 		$eintragen = mysql_query($aufruf);
-	}
+	}	
+// Neue Vokabel
 	if ($neueVokabel==1) {
-		switch ($wortart) {
-			case 1:
-				$aufruf="INSERT INTO vokabeln (deutsch,englisch,wortartID,verbenID,zeitenID) VALUES (\"".$deutsch."\",\"".$englisch."\",".$wortart.",".$verben.",".$zeiten.")";
-				break;
-		    default:
-				$aufruf="INSERT INTO vokabeln (deutsch,englisch,wortartID) VALUES (\"".$deutsch."\",\"".$englisch."\",".$wortart.")";
-				break;
+		$eintrag="false";
+		$deutsch=explode(";",$deutsch);
+		$englisch=explode(";",$englisch);
+		foreach ($deutsch as $key => $value) {
+			foreach ($englisch as $keyE => $valueE) {
+				switch ($wortart) {
+					case 1:
+						// verben
+						if ($eintrag=="false") {
+							$eintrag="true";
+							$sql="SELECT MAX(verbenID) FROM verben";
+							$result=mysql_query($sql);
+							$maxID=mysql_result($result,0,0);
+							$maxID=$maxID+1;
+
+							$aufruf="INSERT INTO verben(verbenID, verben) VALUES (".$maxID.",\"".$valueE."\")";
+//							echo "verb eintragen: ",$aufruf,"<br>";
+							$eintragen = mysql_query($aufruf);
+						} else {
+							if ($keyE>0) {
+								$aufruf="INSERT INTO vokabeln (deutsch,englisch,wortartID,verbenID,zeitenID) VALUES (\"".$value."\",\"".$valueE."\",".$wortart.",".$maxID.",".$keyE.")";
+//								echo $aufruf,"<br>";
+								$eintragen = mysql_query($aufruf);
+							}
+						}
+						break;
+					default:
+						// sonstiges
+						$aufruf="INSERT INTO vokabeln (deutsch,englisch,wortartID) VALUES (\"".$value."\",\"".$valueE."\",".$wortart.")";
+//						echo $aufruf,"<br>";
+						$eintragen = mysql_query($aufruf);
+						break;
+				}
+			}
 		}
-//		echo $aufruf;
-		$eintragen = mysql_query($aufruf);
 	}
 /*
 // Update Eintrag
@@ -147,7 +179,7 @@
 
 		$_SESSION['id']=$id;
 	}
-
+*/
 // Suchen
 	if ($suchEintrag==1) {$_SESSION['startPage'] ="0";}
 	// Datum auseinandernehmen
@@ -182,7 +214,6 @@
 	if ($_SESSION['verwendung']!="%") {$whereClause=$whereClause." AND meta.verwendung LIKE ".$_SESSION['verwendung'];}
 	if ($_SESSION['konto']!="%") {$whereClause=$whereClause." AND konto LIKE ".$_SESSION['konto'];}
 	if ($_SESSION['id']<>"%") {$whereClause=$whereClause." AND meta.id = ".$_SESSION['id'];}
-*/
 ?>
 
 <!-- ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- -->
@@ -195,11 +226,6 @@
 		<section class="top-bar-section">
 			<ul class="left">
 			    <li class="divider"></li>
-			    <!--li class="has-dropdown"><a href="#"><i class="fi-graph-bar "></i> Auswertungen</a>
-			            <ul class="dropdown">
-							<li><a href="sub_auswertungStruktur.php?spaltenTypX=auswahlStruktur&spalte=konto&tabelle=buchung_kategorie&tabellenBeschreibung=Konto">Konto</a></li>
-			            </ul>
-			    </li-->
 			    <li class="divider"></li>
 			    <li class="has-dropdown"><a href="#"><i class="fi-list "></i> Listen verwalten</a>
 			            <ul class="dropdown">
@@ -208,59 +234,82 @@
 							<li><a href="sub_verwalte_auswahl.php?editStatus=0&tabelle=verben&tabellenBeschreibung=Verben">Verben</a></li>
 			            </ul>
 			    </li>
-			    <!--li class="divider"></li>
-				<li><a href="sub_einstellungen.php"><i class="fi-wrench"></i> Einstellungen</a></li>
 			    <li class="divider"></li>
-				<li class="active"><a href="main_suche.php" data-reveal-id="newFileModal"><i class="fi-page-add"></i> neuer Eintrag</a></li>
-				<li class="active"><a href="main_suche.php" data-reveal-id="searchFileModal"><i class="fi-page-search"></i> Eintrag suchen</a></li-->
+			    <li class="has-dropdown"><a href="#"><i class="fi-list "></i> Vokabeln lernen</a>
+			            <ul class="dropdown">
+							<li><a href="sub_vokabel.php?rand=1&sprache=englisch"><i class="fi-wrench"></i> Englisch übersetzen</a></li>
+							<li><a href="sub_vokabel.php?rand=1&sprache=deutsch"><i class="fi-wrench"></i> Deutsch übersetzen</a></li>
+			            </ul>
+			    </li>
 			    <li class="divider"></li>
 				<li><a href="sub_einstellungen.php"><i class="fi-wrench"></i> Einstellungen</a></li>
-				<li class="active"><a href="main_suche.php" data-reveal-id="newSatz"><i class="fi-page-add"></i> neuer Satz</a></li>
-				<li class="active"><a href="main_suche.php" data-reveal-id="newVokabel"><i class="fi-page-add"></i> neue Vokabel</a></li>
+				<li class="active"><a href="main_suche.php" tabindex="1" data-reveal-id="newSatz"><i class="fi-page-add"></i> neuer Satz</a></li>
+				<li class="active"><a href="main_suche.php" tabindex="2" data-reveal-id="newVokabel"><i class="fi-page-add"></i> neue Vokabel</a></li>
+			<!--/ul>
+			<ul class ="right"-->
+				<li class="has-form">
+					<div class="row collapse">
+						<div class="large-12 small-12 columns">
+							<form action="main_suche.php" method="POST" class="custom">
+								<input name="suche" type="text" placeholder="Find Stuff">
+								<input type="hidden" name="uebergabe" value="suchen">
+							</form>
+						</div>
+					</div>
+				</li>
 			</ul>
 		</section>
 	</nav>
 
+<!-- ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- -->
+<!-- Tabelle -->
 	<div class="row">
 		<fieldset>
 			<legend>Vokabeln</legend>
 			<?php
-				$abfrage="SELECT * FROM vokabeln INNER JOIN wortart as wArt ON (vokabeln.wortartID = wArt.wortartID) WHERE vokabeln.zeitenID IS NULL OR vokabeln.zeitenID=1 ORDER BY englisch";
-//				$ergebnis = mysql_query($abfrage);
-//				$menge = mysql_num_rows($ergebnis);
-//				echo "menge:",$menge,"<br>";
+				$abfrage="SELECT * FROM vokabeln INNER JOIN wortart as wArt ON (vokabeln.wortartID = wArt.wortartID) WHERE vokabeln.zeitenID IS NULL OR vokabeln.zeitenID=1";
+				$abfrage=$abfrage." ORDER BY ".$sort." ".$sortBy;
+				$ergebnis = mysql_query($abfrage);
+				$menge = mysql_num_rows($ergebnis);
+
 				$abfrage=$abfrage." LIMIT ".$_SESSION['startPage'].",".$maxEintraegeProSite;
 				$ergebnis = mysql_query($abfrage);
 //				echo $abfrage;
-
-//				$abfrage2="SELECT sum(betrag) as summe FROM buchungen INNER JOIN metadaten as meta ON (idBuchung = meta.id) inner join buchung_kategorie as buchung on (buchung.buchung_kategorieID = konto) inner join verwendung as verw on (verw.verwendungID = meta.verwendung) ".$whereClause." ORDER BY ".$sort." ".$sortBy;
-//				echo "<br>",$abfrage2;
-//				$ergebnis2=mysql_query($abfrage2);
-//				$row2 = mysql_fetch_assoc($ergebnis2);
-//				$summe = $row2['summe'];				
 				echo "<div class=\"row\">";
-					echo "<div class=\"small-12 large-4 columns\">";
+					echo "<div class=\"small-6 large-1 columns\">";
+						echo "<a class=\"button expand\" href=\"main_suche.php?sort=id&sortBy=".$sortBy."\">ID</a>";
+					echo "</div>";
+					echo "<div class=\"small-6 large-3 columns\">";
 						echo "<a class=\"button expand\" href=\"main_suche.php?sort=englisch&sortBy=".$sortBy."\">englisch</a>";
 					echo "</div>";
-					echo "<div class=\"small-12 large-4 columns\">";
+					echo "<div class=\"small-6 large-3 columns\">";
 						echo "<a class=\"button expand\" href=\"main_suche.php?sort=deutsch&sortBy=".$sortBy."\">deutsch</a>";
 					echo "</div>";
-					echo "<div class=\"small-12 large-4 columns\">";
+					echo "<div class=\"small-6 large-3 columns\">";
 						echo "<a class=\"button expand\" href=\"main_suche.php?sort=wArt.wortart&sortBy=".$sortBy."\">Wortart</a>";
+					echo "</div>";
+					echo "<div class=\"small-6 large-2 columns\">";
+						echo "<a class=\"button expand\" href=\"main_suche.php?sort=richtig&sortBy=".$sortBy."\">Rating</a>";
 					echo "</div>";
 				echo "</div>";
 
 				while($row = mysql_fetch_object($ergebnis)) {
 					echo "<hr>";
 					echo "<div class=\"row\">";
-						echo "<div class=\"small-12 large-4 columns\">";
+						echo "<div class=\"small-6 large-1 columns\">";
+							echo "<a href=\"main_suche.php?reset=true\">".$row->id."</a>";
+						echo "</div>";
+						echo "<div class=\"small-6 large-3 columns\">";
 							echo "<a href=\"sub_vokabel.php?wort=".$row->englisch."&sprache=englisch\">".$row->englisch."</a>";
 						echo "</div>";
-						echo "<div class=\"small-12 large-4 columns\">";
+						echo "<div class=\"small-6 large-3 columns\">";
 							echo "<a href=\"sub_vokabel.php?wort=".$row->deutsch."&sprache=deutsch\">".$row->deutsch."</a>";
 						echo "</div>";
-						echo "<div class=\"small-12 large-4 columns\">";
+						echo "<div class=\"small-6 large-3 columns\">";
 							echo "<a href=\"main_suche.php?reset=true\">".$row->wortart."</a>";
+						echo "</div>";
+						echo "<div class=\"small-6 large-2 columns\">";
+							echo "<a href=\"main_suche.php?reset=true\">".$row->richtig."</a>";
 						echo "</div>";
 					echo "</div>";
 				}

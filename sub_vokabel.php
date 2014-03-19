@@ -30,12 +30,32 @@
 
 <body>
 	<?php
+		$randomize=0;
+		$ergebnis=0;
 		foreach ($_GET as $key => $value) {
 			if ($key=="wort") {$wort=$value;}
-			if ($key=="sprache") {$sprache=$value;}		
+			if ($key=="sprache") {$sprache=$value;}
+			if ($key=="rand") {$randomize=$value;}
+			if ($key=="ergebnis") {$ergebnis=$value;}
 		}
 	?>
 
+	<?php
+		if ($ergebnis==1) {
+			$abfrage="UPDATE vokabeln SET richtig=richtig+1 WHERE ".$sprache."=\"".$wort."\"";
+			$ergebnis=mysql_query($abfrage);
+			echo $abfrage;
+		}
+	?>
+
+	<?php
+		if ($randomize==1) {
+			$abfrage="SELECT DISTINCT ".$sprache." FROM vokabeln ORDER BY richtig ASC,rand()";// LIMIT 1";			
+			$ergebnis=mysql_query($abfrage);
+//			echo $abfrage;
+			$wort=mysql_result($ergebnis,0,0);
+		}
+	?>
 
 	<nav class="top-bar" data-topbar>
 		<ul class="title-area">
@@ -43,51 +63,74 @@
 			<li class="toggle-topbar menu-icon"><a href="#">Menu</a></li>
 		</ul>
 		<section class="top-bar-section">
-			<!--ul class="left">
-			    <li class="divider"></li>
-			    <li class="has-dropdown"><a href="#"><i class="fi-graph-bar "></i> Auswertungen</a>
-			            <ul class="dropdown">
-							<li><a href="sub_auswertungStruktur.php?spaltenTypX=auswahlStruktur&spalte=konto&tabelle=buchung_kategorie&tabellenBeschreibung=Konto">Konto</a></li>
-			            </ul>
-			    </li>
+			<ul class="left">
+			    <!--li class="divider"></li>
 			    <li class="divider"></li>
 			    <li class="has-dropdown"><a href="#"><i class="fi-list "></i> Listen verwalten</a>
 			            <ul class="dropdown">
-							<li><a href="sub_verwalte_auswahlStruktur.php?editStatus=0&tabelle=verwendung&tabellenBeschreibung=Verwendung">Verwendung</a></li>
-							<li><a href="sub_verwalte_auswahlStruktur.php?editStatus=0&tabelle=buchung_kategorie&tabellenBeschreibung=Konto">Konto</a></li>
+							<li><a href="sub_verwalte_auswahl.php?editStatus=0&tabelle=zeiten&tabellenBeschreibung=Zeiten">Zeiten</a></li>
+							<li><a href="sub_verwalte_auswahl.php?editStatus=0&tabelle=wortart&tabellenBeschreibung=Wortart">Wortart</a></li>
+							<li><a href="sub_verwalte_auswahl.php?editStatus=0&tabelle=verben&tabellenBeschreibung=Verben">Verben</a></li>
+			            </ul>
+			    </li-->
+			    <li class="divider"></li>
+			    <li class="has-dropdown"><a href="#"><i class="fi-list "></i> Vokabeln lernen</a>
+			            <ul class="dropdown">
+							<li><a href="sub_vokabel.php?rand=1&sprache=englisch"><i class="fi-wrench"></i> Englisch übersetzen</a></li>
+							<li><a href="sub_vokabel.php?rand=1&sprache=deutsch"><i class="fi-wrench"></i> Deutsch übersetzen</a></li>
 			            </ul>
 			    </li>
-			    <li class="divider"></li>
+			    <!--li class="divider"></li>
 				<li><a href="sub_einstellungen.php"><i class="fi-wrench"></i> Einstellungen</a></li>
-			    <li class="divider"></li>
-				<li class="active"><a href="main_suche.php" data-reveal-id="newFileModal"><i class="fi-page-add"></i> neuer Eintrag</a></li>
-				<li class="active"><a href="main_suche.php" data-reveal-id="searchFileModal"><i class="fi-page-search"></i> Eintrag suchen</a></li>
+				<li class="active"><a href="main_suche.php" data-reveal-id="newSatz"><i class="fi-page-add"></i> neuer Satz</a></li>
+				<li class="active"><a href="main_suche.php" data-reveal-id="newVokabel"><i class="fi-page-add"></i> neue Vokabel</a></li-->
 			</ul>
-		</section-->
+		</section>
 	</nav>
 
 	<div class="row">
 		<fieldset>
 			<legend>Übersetzung</legend>
 			<?php
-				$abfrage="SELECT * FROM vokabeln WHERE ".$sprache."=\"".$wort."\"";
+				$abfrage="SELECT DISTINCT englisch,deutsch,wortart FROM vokabeln INNER JOIN wortart as wort ON (wort.wortartID = vokabeln.wortartID) WHERE ".$sprache."=\"".$wort."\" ORDER BY wortart";
 				$ergebnis = mysql_query($abfrage);
 //				echo $abfrage;
 				while($row = mysql_fetch_object($ergebnis)) {
 					echo "<div class=\"row\">";
-						echo "<div class=\"small-12 large-4 columns\">";
-							echo "<a href=\"sub_vokabel.php?wort=".$row->englisch."&sprache=englisch\">".$row->englisch."</a>";
+						$deu="deutsch";
+						$eng="englisch";
+						if ($randomize==1 AND $sprache=="englisch") {$deu="leer";}
+						if ($randomize==1 AND $sprache=="deutsch") {$eng="leer";}
+						echo "<div class=\"small-6 large-4 columns\">";
+							echo "<a href=\"sub_vokabel.php?wort=".$row->englisch."&sprache=englisch\"> ".$row->$eng."</a>";
+						echo "</div>";
+						echo "<div class=\"small-6 large-4 columns\">";
+							echo "<a href=\"sub_vokabel.php?wort=".$row->deutsch."&sprache=deutsch\"> ".$row->$deu."</a>";
 						echo "</div>";
 						echo "<div class=\"small-12 large-4 columns\">";
-							echo "<a href=\"sub_vokabel.php?wort=".$row->deutsch."&sprache=deutsch\">".$row->deutsch."</a>";
+							echo $row->wortart;
 						echo "</div>";
-						echo "<div class=\"small-12 large-4 columns\">";
-							echo "<a href=\"main_suche.php?reset=true\">".$row->wortart."</a>";
-						echo "</div>";
+						echo "<hr>";
 					echo "</div>";
 				}
 			?>
 		</fieldset>
+	</div>
+
+	<div class="row">
+		<?php
+			switch ($randomize) {
+				case 1:
+					echo "<a href=\"sub_vokabel.php?rand=2&sprache=".$sprache."&wort=".$wort."\" class=\"button expand\"><i class=\"fi-flag size-36 \"></i></a>";
+					break;
+				case 2:
+					echo "<ul class=\"button-group\">";
+						echo "<li><a href=\"sub_vokabel.php?rand=1&sprache=".$sprache."&wort=".$wort."&ergebnis=1\" class=\"button\"><i class=\"fi-check size-36 \"></i></a></li>";
+						echo "<li><a href=\"sub_vokabel.php?rand=1&sprache=".$sprache."&wort=".$wort."&ergebnis=0\" class=\"button alert\"><i class=\"fi-x size-36 \"></i></a></li>";
+					echo "</ul>";
+					break;
+			}
+		?>
 	</div>
 
 	<div class="row">
@@ -102,15 +145,6 @@
 					OR ".$sprache." LIKE \"% ".$wort."!\"  
 					OR ".$sprache." LIKE \"% ".$wort."\"";
 				$ergebnis = mysql_query($abfrage);
-/*				echo "<div class=\"row\">";
-					echo "<div class=\"small-12 large-6 columns\">";
-						echo "<h1>englisch</h1>";
-					echo "</div>";
-					echo "<div class=\"small-12 large-6 columns\">";
-						echo "<h1>deutsch</h1>";
-					echo "</div>";
-				echo "</div>";
-*/
 				while($row = mysql_fetch_object($ergebnis)) {
 					echo "<hr>";
 					echo "<div class=\"row\">";
@@ -167,7 +201,7 @@
 			?>
 		</fieldset>
 	</div>
-	
+
 	<?php
 		$abfrage="SELECT verb.verbenID FROM vokabeln INNER JOIN verben as verb ON (verb.verbenID = vokabeln.verbenID) INNER JOIN zeiten as zeit ON (zeit.zeitenID = vokabeln.zeitenID) WHERE vokabeln.".$sprache."=\"".$wort."\" ORDER BY zeit.zeitenID";
 		$ergebnis = mysql_query($abfrage);
@@ -180,15 +214,16 @@
 					$ergebnis = mysql_query($abfrage);
 					$id = mysql_fetch_row($ergebnis);
 					$id=$id[0];
-					$abfrage="SELECT verb.grundform FROM vokabeln INNER JOIN verben as verb ON (verb.verbenID = vokabeln.verbenID) INNER JOIN zeiten as zeit ON (zeit.zeitenID = vokabeln.zeitenID) WHERE vokabeln.".$sprache."=\"".$wort."\" ORDER BY zeit.zeitenID";
+					$abfrage="SELECT verb.verben FROM vokabeln INNER JOIN verben as verb ON (verb.verbenID = vokabeln.verbenID) INNER JOIN zeiten as zeit ON (zeit.zeitenID = vokabeln.zeitenID) WHERE vokabeln.".$sprache."=\"".$wort."\" ORDER BY zeit.zeitenID";
 					$ergebnis = mysql_query($abfrage);
 					$grundform = mysql_fetch_row($ergebnis);
 					$grundform=$grundform[0];
+//					echo $abfrage;
 					echo "<div class=\"row\">";
 						echo "<h1>",$grundform,"</h1>";
 					echo "</div>";
 				
-					$abfrage="SELECT * FROM vokabeln INNER JOIN verben as verb ON (verb.verbenID = vokabeln.verbenID) INNER JOIN zeiten as zeit ON (zeit.zeitenID = vokabeln.zeitenID) WHERE verb.verbenID=".$id." ORDER BY zeit.zeitenID";
+					$abfrage="SELECT DISTINCT englisch, zeit.zeiten as zeiten FROM vokabeln INNER JOIN verben as verb ON (verb.verbenID = vokabeln.verbenID) INNER JOIN zeiten as zeit ON (zeit.zeitenID = vokabeln.zeitenID) WHERE verb.verbenID=".$id." ORDER BY zeit.zeitenID";
 					$ergebnis = mysql_query($abfrage);
 					while($row = mysql_fetch_object($ergebnis)) {
 						echo "<hr>";
@@ -197,15 +232,15 @@
 								echo "<a href=\"sub_vokabel.php?wort=".$row->englisch."&sprache=englisch\">".$row->englisch."</a>";
 							echo "</div>";
 							echo "<div class=\"small-12 large-4 columns\">";
-								echo "<a href=\"sub_vokabel.php?wort=".$row->deutsch."&sprache=deutsch\">".$row->deutsch."</a>";
+								echo $row->zeiten;
 							echo "</div>";
 							echo "<div class=\"small-12 large-4 columns\">";
 								echo "<a href=\"main_suche.php?reset=true\">".$row->wortart."</a>";
 							echo "</div>";
 						echo "</div>";
 					}
-				echo "</fieldset>";
-			echo "</div>";
+			echo "</fieldset>";
+		echo "</div>";
 		}
 	?>
 	<?php

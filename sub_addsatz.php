@@ -1,16 +1,17 @@
 <form action="main_suche.php" method="POST" class="custom">
 		<div class="small-12 large-6 columns">
-			<label>Deutsch</label>
-			<textarea name="deutsch"></textarea>			
-		</div>
-		<div class="small-12 large-6 columns">
 			<label>Englisch</label>
-			<textarea name="englisch"></textarea>			
+			<textarea tabindex="1" name="englisch"></textarea>			
+		</div>
+
+		<div class="small-12 large-6 columns">
+			<label>Deutsch</label>
+			<textarea tabindex="2" name="deutsch"></textarea>			
 		</div>
 
 
 		<div class="small-12 large-12 columns">
-			<button class="button expand" type="Submit">Daten eintragen</button>
+			<button tabindex="3" class="button expand" type="Submit">Daten eintragen</button>
 		</div>
 		<input type="hidden" name="uebergabe" value="neuerSatz">
 </form>
