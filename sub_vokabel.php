@@ -31,17 +31,17 @@
 <body>
 	<?php
 		$randomize=0;
-		$ergebnis=0;
+		$ergebnisVokabelraten=-1;
 		foreach ($_GET as $key => $value) {
 			if ($key=="wort") {$wort=$value;}
 			if ($key=="sprache") {$sprache=$value;}
 			if ($key=="rand") {$randomize=$value;}
-			if ($key=="ergebnis") {$ergebnis=$value;}
+			if ($key=="ergebnis") {$ergebnisVokabelraten=$value;}
 		}
 	?>
 
 	<?php
-		if ($ergebnis==1) {
+		if ($ergebnisVokabelraten==1) {
 			$abfrage="UPDATE vokabeln SET richtig=richtig+1 WHERE ".$sprache."=\"".$wort."\"";
 			$ergebnis=mysql_query($abfrage);
 			echo $abfrage;
@@ -88,6 +88,13 @@
 		</section>
 	</nav>
 
+	<?php
+		$deu="deutsch";
+		$eng="englisch";
+		if ($randomize==1 AND $sprache=="englisch") {$deu="leer";}
+		if ($randomize==1 AND $sprache=="deutsch") {$eng="leer";}
+	?>
+
 	<div class="row">
 		<fieldset>
 			<legend>Übersetzung</legend>
@@ -97,10 +104,6 @@
 //				echo $abfrage;
 				while($row = mysql_fetch_object($ergebnis)) {
 					echo "<div class=\"row\">";
-						$deu="deutsch";
-						$eng="englisch";
-						if ($randomize==1 AND $sprache=="englisch") {$deu="leer";}
-						if ($randomize==1 AND $sprache=="deutsch") {$eng="leer";}
 						echo "<div class=\"small-6 large-4 columns\">";
 							echo "<a href=\"sub_vokabel.php?wort=".$row->englisch."&sprache=englisch\"> ".$row->$eng."</a>";
 						echo "</div>";
@@ -116,6 +119,80 @@
 			?>
 		</fieldset>
 	</div>
+
+	<?php
+		$abfrage="SELECT * FROM saetze WHERE 
+			   ".$sprache." LIKE \"% ".$wort." %\" 
+			OR ".$sprache." LIKE \"".$wort." %\" 
+			OR ".$sprache." LIKE \"% ".$wort."?\" 
+			OR ".$sprache." LIKE \"% ".$wort.".\" 
+			OR ".$sprache." LIKE \"% ".$wort."!\"  
+			OR ".$sprache." LIKE \"% ".$wort."\"";
+		$ergebnis=mysql_query($abfrage);
+		$num_rows=mysql_num_rows($ergebnis);
+		if ($num_rows>0) {
+			echo "<div class=\"row\">";
+				echo "<fieldset>";
+					echo "<legend>Sätze</legend>";
+					while($row=mysql_fetch_object($ergebnis)) {
+						echo "<hr>";
+						echo "<div class=\"row\">";
+							$worter=explode(" ", $row->$eng);
+							echo "<div class=\"small-12 large-6 columns\">";
+								foreach ($worter as $i => $value) {									
+									if ($value!="") {
+										$abfrageX="SELECT COUNT(id) FROM vokabeln WHERE englisch=\"".$value."\"";
+										$ergebnisX = mysql_query($abfrageX);
+										$mengeX = mysql_fetch_row($ergebnisX);
+										$mengeX = $mengeX[0];
+//										echo $abfrageX;
+										if ($mengeX>0) {
+											$abfrageXX="SELECT id FROM vokabeln WHERE englisch=\"".$value."\"";											
+											$ergebnisXX = mysql_query($abfrageXX);
+											$mengeXX = mysql_fetch_row($ergebnisXX);
+											$mengeXX=$mengeXX[0];
+//											echo $abfrageXX;
+											if ($value==$wort) {
+												echo "<em><strong><a href=\"sub_vokabel.php?wort=".$value."&sprache=englisch\"> ",$value,"</a></strong></em>";
+											} else {
+												echo "<a href=\"sub_vokabel.php?wort=".$value."&sprache=englisch\"> ",$value,"</a>";
+											}
+										} else {
+											echo " ",$value;
+										}
+									}
+								}
+							echo "</div>";
+							$worter=explode(" ", $row->$deu);
+							echo "<div class=\"small-12 large-6 columns\">";
+								foreach ($worter as $i => $value) {
+									if ($value!="") {
+										$abfrageX="SELECT COUNT(id) FROM vokabeln WHERE deutsch=\"".$value."\"";
+										$ergebnisX = mysql_query($abfrageX);
+										$mengeX = mysql_fetch_row($ergebnisX);
+										$mengeX = $mengeX[0];
+										if ($mengeX>0) {
+											$abfrageXX="SELECT id FROM vokabeln WHERE deutsch=\"".$value."\"";
+											$ergebnisXX = mysql_query($abfrageXX);
+											$mengeXX = mysql_fetch_row($ergebnisXX);
+											$mengeXX=$mengeXX[0];
+											if ($value==$wort) {
+												echo "<em><strong><a href=\"sub_vokabel.php?wort=".$value."&sprache=deutsch\"> ",$value,"</a></strong></em>";
+											} else {
+												echo "<a href=\"sub_vokabel.php?wort=".$value."&sprache=deutsch\"> ",$value,"</a>";
+											}
+										} else {
+											echo " ",$value;
+										}
+									}
+								}
+							echo "</div>";
+						echo "</div>";
+					}
+				echo "</fieldset>";
+			echo "</div>";
+		}
+	?>
 
 	<div class="row">
 		<?php
@@ -133,114 +210,48 @@
 		?>
 	</div>
 
-	<div class="row">
-		<fieldset>
-			<legend>Sätze</legend>
-			<?php
-				$abfrage="SELECT * FROM saetze WHERE 
-					   ".$sprache." LIKE \"% ".$wort." %\" 
-					OR ".$sprache." LIKE \"".$wort." %\" 
-					OR ".$sprache." LIKE \"% ".$wort."?\" 
-					OR ".$sprache." LIKE \"% ".$wort.".\" 
-					OR ".$sprache." LIKE \"% ".$wort."!\"  
-					OR ".$sprache." LIKE \"% ".$wort."\"";
-				$ergebnis = mysql_query($abfrage);
-				while($row = mysql_fetch_object($ergebnis)) {
-					echo "<hr>";
-					echo "<div class=\"row\">";
-						$worter=explode(" ", $row->englisch);
-						echo "<div class=\"small-12 large-6 columns\">";
-							foreach ($worter as $i => $value) {
-								if ($value!="") {
-									$abfrageX="SELECT COUNT(id) FROM vokabeln WHERE englisch=\"".$value."\"";
-									$ergebnisX = mysql_query($abfrageX);
-									$mengeX = mysql_fetch_row($ergebnisX);
-									$mengeX = $mengeX[0];
-									if ($mengeX>0) {
-										$abfrageXX="SELECT id FROM vokabeln WHERE englisch=\"".$value."\"";
-										$ergebnisXX = mysql_query($abfrageXX);
-										$mengeXX = mysql_fetch_row($ergebnisXX);
-										$mengeXX=$mengeXX[0];
-										if ($value==$wort) {
-											echo "<em><strong><a href=\"sub_vokabel.php?wort=".$value."&sprache=englisch\"> ",$value,"</a></strong></em>";
-										} else {
-											echo "<a href=\"sub_vokabel.php?wort=".$value."&sprache=englisch\"> ",$value,"</a>";
-										}
-									} else {
-										echo " ",$value;
-									}
-								}
-							}
-						echo "</div>";
-						$worter=explode(" ", $row->deutsch);
-						echo "<div class=\"small-12 large-6 columns\">";
-							foreach ($worter as $i => $value) {
-								if ($value!="") {
-									$abfrageX="SELECT COUNT(id) FROM vokabeln WHERE deutsch=\"".$value."\"";
-									$ergebnisX = mysql_query($abfrageX);
-									$mengeX = mysql_fetch_row($ergebnisX);
-									$mengeX = $mengeX[0];
-									if ($mengeX>0) {
-										$abfrageXX="SELECT id FROM vokabeln WHERE deutsch=\"".$value."\"";
-										$ergebnisXX = mysql_query($abfrageXX);
-										$mengeXX = mysql_fetch_row($ergebnisXX);
-										$mengeXX=$mengeXX[0];
-										if ($value==$wort) {
-											echo "<em><strong><a href=\"sub_vokabel.php?wort=".$value."&sprache=deutsch\"> ",$value,"</a></strong></em>";
-										} else {
-											echo "<a href=\"sub_vokabel.php?wort=".$value."&sprache=deutsch\"> ",$value,"</a>";
-										}
-									} else {
-										echo " ",$value;
-									}
-								}
-							}
-						echo "</div>";
-					echo "</div>";
-				}
-			?>
-		</fieldset>
-	</div>
 
 	<?php
-		$abfrage="SELECT verb.verbenID FROM vokabeln INNER JOIN verben as verb ON (verb.verbenID = vokabeln.verbenID) INNER JOIN zeiten as zeit ON (zeit.zeitenID = vokabeln.zeitenID) WHERE vokabeln.".$sprache."=\"".$wort."\" ORDER BY zeit.zeitenID";
-		$ergebnis = mysql_query($abfrage);
-		$menge = mysql_fetch_row($ergebnis);
-		if ($menge>0) {
-			echo "<div class=\"row\">";
-				echo "<fieldset>";
-					echo "<legend>Verbformen</legend>";
-					$abfrage="SELECT verb.verbenID FROM vokabeln INNER JOIN verben as verb ON (verb.verbenID = vokabeln.verbenID) INNER JOIN zeiten as zeit ON (zeit.zeitenID = vokabeln.zeitenID) WHERE vokabeln.".$sprache."=\"".$wort."\" ORDER BY zeit.zeitenID";
-					$ergebnis = mysql_query($abfrage);
-					$id = mysql_fetch_row($ergebnis);
-					$id=$id[0];
-					$abfrage="SELECT verb.verben FROM vokabeln INNER JOIN verben as verb ON (verb.verbenID = vokabeln.verbenID) INNER JOIN zeiten as zeit ON (zeit.zeitenID = vokabeln.zeitenID) WHERE vokabeln.".$sprache."=\"".$wort."\" ORDER BY zeit.zeitenID";
-					$ergebnis = mysql_query($abfrage);
-					$grundform = mysql_fetch_row($ergebnis);
-					$grundform=$grundform[0];
-//					echo $abfrage;
-					echo "<div class=\"row\">";
-						echo "<h1>",$grundform,"</h1>";
-					echo "</div>";
-				
-					$abfrage="SELECT DISTINCT englisch, zeit.zeiten as zeiten FROM vokabeln INNER JOIN verben as verb ON (verb.verbenID = vokabeln.verbenID) INNER JOIN zeiten as zeit ON (zeit.zeitenID = vokabeln.zeitenID) WHERE verb.verbenID=".$id." ORDER BY zeit.zeitenID";
-					$ergebnis = mysql_query($abfrage);
-					while($row = mysql_fetch_object($ergebnis)) {
-						echo "<hr>";
+		if ($ergebnisVokabelraten==-1) {
+			$abfrage="SELECT verb.verbenID FROM vokabeln INNER JOIN verben as verb ON (verb.verbenID = vokabeln.verbenID) INNER JOIN zeiten as zeit ON (zeit.zeitenID = vokabeln.zeitenID) WHERE vokabeln.".$sprache."=\"".$wort."\" ORDER BY zeit.zeitenID";
+			$ergebnis = mysql_query($abfrage);
+			$menge = mysql_fetch_row($ergebnis);
+			if ($menge>0) {
+				echo "<div class=\"row\">";
+					echo "<fieldset>";
+						echo "<legend>Verbformen</legend>";
+						$abfrage="SELECT verb.verbenID FROM vokabeln INNER JOIN verben as verb ON (verb.verbenID = vokabeln.verbenID) INNER JOIN zeiten as zeit ON (zeit.zeitenID = vokabeln.zeitenID) WHERE vokabeln.".$sprache."=\"".$wort."\" ORDER BY zeit.zeitenID";
+						$ergebnis = mysql_query($abfrage);
+						$id = mysql_fetch_row($ergebnis);
+						$id=$id[0];
+						$abfrage="SELECT verb.verben FROM vokabeln INNER JOIN verben as verb ON (verb.verbenID = vokabeln.verbenID) INNER JOIN zeiten as zeit ON (zeit.zeitenID = vokabeln.zeitenID) WHERE vokabeln.".$sprache."=\"".$wort."\" ORDER BY zeit.zeitenID";
+						$ergebnis = mysql_query($abfrage);
+						$grundform = mysql_fetch_row($ergebnis);
+						$grundform=$grundform[0];
+	//					echo $abfrage;
 						echo "<div class=\"row\">";
-							echo "<div class=\"small-12 large-4 columns\">";
-								echo "<a href=\"sub_vokabel.php?wort=".$row->englisch."&sprache=englisch\">".$row->englisch."</a>";
-							echo "</div>";
-							echo "<div class=\"small-12 large-4 columns\">";
-								echo $row->zeiten;
-							echo "</div>";
-							echo "<div class=\"small-12 large-4 columns\">";
-								echo "<a href=\"main_suche.php?reset=true\">".$row->wortart."</a>";
-							echo "</div>";
+							echo "<h1>",$grundform,"</h1>";
 						echo "</div>";
-					}
-			echo "</fieldset>";
-		echo "</div>";
+				
+						$abfrage="SELECT DISTINCT englisch, zeit.zeiten as zeiten FROM vokabeln INNER JOIN verben as verb ON (verb.verbenID = vokabeln.verbenID) INNER JOIN zeiten as zeit ON (zeit.zeitenID = vokabeln.zeitenID) WHERE verb.verbenID=".$id." ORDER BY zeit.zeitenID";
+						$ergebnis = mysql_query($abfrage);
+						while($row = mysql_fetch_object($ergebnis)) {
+							echo "<hr>";
+							echo "<div class=\"row\">";
+								echo "<div class=\"small-12 large-4 columns\">";
+									echo "<a href=\"sub_vokabel.php?wort=".$row->englisch."&sprache=englisch\">".$row->englisch."</a>";
+								echo "</div>";
+								echo "<div class=\"small-12 large-4 columns\">";
+									echo $row->zeiten;
+								echo "</div>";
+								echo "<div class=\"small-12 large-4 columns\">";
+									echo "<a href=\"main_suche.php?reset=true\">".$row->wortart."</a>";
+								echo "</div>";
+							echo "</div>";
+						}
+				echo "</fieldset>";
+			echo "</div>";
+			}
 		}
 	?>
 	<?php
