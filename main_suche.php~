@@ -298,9 +298,8 @@
 					echo "</div>";
 				}
 			?>
-			
+
 			<div class="row">
-				<hr>
 				<div class="pagination-centered">
 					<ul class="pagination">
 						<?php
