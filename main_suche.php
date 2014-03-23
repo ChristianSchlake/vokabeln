@@ -24,6 +24,8 @@
 */
 
 	if (!isset($_SESSION['startPage'])) {$_SESSION['startPage'] ="0";}
+	if (!isset($_SESSION['suchwort'])) {$_SESSION['suchwort'] ="%";}
+	if (!isset($_SESSION['typ'])) {$_SESSION['typ'] ="%";}
 
 
 ?>
@@ -73,6 +75,7 @@
 	$neueVokabel=0;
 	$suchEintrag=0;
 	$changeSort=0;
+	$editStatus=0;
 	$deutsch="";
 	$englisch="";
 	$whereClause="";
@@ -93,24 +96,41 @@
 		}
 		if ($key=="deutsch") {$deutsch=$value;}
 		if ($key=="englisch") {$englisch=$value;}
+		if ($key=="deutschEdit") {$deutschEdit=$value;}
+		if ($key=="id") {$id=$value;}
+		if ($key=="englischEdit") {$englischEdit=$value;}
+		if ($key=="typEdit") {$typEdit=$value;}
+		if ($key=="wortartEdit") {$wortartEdit=$value;}
 		if ($key=="wortart") {$wortart=$value;}
 		if ($key=="zeiten") {$zeiten=$value;}
 		if ($key=="verben") {$verben=$value;}
+		if ($key=="typ") {$typ=$value;}
 		if ($key=="suchwort") {$_SESSION['suchwort']=$value;}
+		if ($key=="updateStatus" AND $value=="1"){$updateStatus=1;}
+		if ($key=="deleteStatus" AND $value=="1"){$deleteStatus=1;}
+		if ($key=="editStatus") {$editStatus=$value;}
+	}
+	if ($updateStatus==1) {
+		$abfrage="UPDATE vokabeln SET deutsch=\"".$deutschEdit."\", englisch=\"".$englischEdit."\", typID=".$typEdit.", wortartID=".$wortartEdit."  WHERE id=\"".$id."\"";
+		mysql_query($abfrage);
+//		echo $abfrage;
+	}
+
+	if ($deleteStatus==1) {
+		$abfrage="DELETE FROM vokabeln WHERE id=\"".$id."\"";
+		mysql_query($abfrage);
+//		echo $abfrage;
 	}
 	
 	foreach ($_GET as $key => $value) {
-//		if ($key=="uebergabe" AND $value=="suchEintrag") {$suchEintrag=1;}
 		if ($key=="sort") {$sort=$value;}
 		if ($key=="sortBy") {$sortBy=$value;}
 		if ($key=="startPage") {$_SESSION['startPage'] = $value;}
+		if ($key=="typ") {$_SESSION['typ'] = $value;}
 		if ($key=="changeSort") {$changeSort=$value;}
-//		if ($key=="datum") {$_SESSION['datum'] = $value;}
-/*		if ($key=="verwendung") {$_SESSION['verwendung'] = $value;}
-		if ($key=="konto") {$_SESSION['konto'] = $value;}
-		if ($key=="betrag") {$_SESSION['betrag'] = $value;}		
-		if ($key=="id") {$_SESSION['id'] = $value;}
-*/
+		if ($key=="editStatus") {$editStatus=$value;}
+		if ($key=="uebergabe" AND $value="suchen") {$suchEintrag=1;}
+		if ($key=="suchwort") {$_SESSION['suchwort']=$value;}
 	}
 
 	if ($changeSort==1) {
@@ -127,8 +147,9 @@
 
 // Neuer Satz
 	if ($neuerSatz==1) {				
-		$aufruf="INSERT INTO saetze (deutsch,englisch) VALUES (\"".$deutsch."\",\"".$englisch."\")";
+		$aufruf="INSERT INTO saetze (deutsch,englisch,typ) VALUES (\"".$deutsch."\",\"".$englisch."\",".$typ.")";
 		$eintragen = mysql_query($aufruf);
+//		echo $aufruf;
 	}	
 // Neue Vokabel
 	if ($neueVokabel==1) {
@@ -168,32 +189,20 @@
 			}
 		}
 	}
-/*
-// Update Eintrag
-	if ($updateEintrag==1) {
-		$betragNeg=$betrag*-1;
 
-		$aufruf="UPDATE metadaten SET datum=STR_TO_DATE(\"".$datum."\", \"%d.%m.%Y\"),verwendung=".$verwendung.",beschreibung=\"".$beschreibung."\" WHERE id=".$id;
-		$eintragen = mysql_query($aufruf);
-
-		$aufruf="UPDATE buchungen SET konto=".$kontoVon.",betrag=".$betragNeg." WHERE id=".$idVon;
-		$eintragen = mysql_query($aufruf);
-
-		$aufruf="UPDATE buchungen SET konto=".$kontoNach.",betrag=".$betrag." WHERE id=".$idNach;
-		$eintragen = mysql_query($aufruf);
-
-		$_SESSION['id']=$id;
-	}
-*/
 // Suchen
-	if ($suchEintrag==1) {
+//	if ($suchEintrag==1) {
 		$_SESSION['startPage'] ="0";
 		if ($_SESSION['suchwort']!="%") {
 			$whereClause=$whereClause." 
 				AND (vokabeln.englisch LIKE \"%".$_SESSION['suchwort']."%\" 
 				OR vokabeln.deutsch LIKE \"%".$_SESSION['suchwort']."%\")";
 		}
-	}
+		if ($_SESSION['typ']!="%") {
+			$whereClause=$whereClause." 
+				AND (vokabeln.typID LIKE ".$_SESSION['typ'].") "; 
+		}
+//	}
 ?>
 
 <!-- ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- -->
@@ -205,13 +214,14 @@
 		</ul>
 		<section class="top-bar-section">
 			<ul class="left">
-			    <li class="divider"></li>
-			    <li class="divider"></li>
+			    <li class="divider"></li>			    
 			    <li class="has-dropdown"><a href="#"><i class="fi-list "></i> Listen verwalten</a>
 			            <ul class="dropdown">
 							<li><a href="sub_verwalte_auswahl.php?editStatus=0&tabelle=zeiten&tabellenBeschreibung=Zeiten">Zeiten</a></li>
 							<li><a href="sub_verwalte_auswahl.php?editStatus=0&tabelle=wortart&tabellenBeschreibung=Wortart">Wortart</a></li>
 							<li><a href="sub_verwalte_auswahl.php?editStatus=0&tabelle=verben&tabellenBeschreibung=Verben">Verben</a></li>
+							<li><a href="sub_verwalte_auswahl.php?editStatus=0&tabelle=typ&tabellenBeschreibung=Typen">Typen</a></li>
+							<li><a href="sub_verwalte_saetze.php">Sätze</a></li>
 			            </ul>
 			    </li>
 			    <li class="divider"></li>
@@ -223,23 +233,51 @@
 			    </li>
 			    <li class="divider"></li>
 				<li><a href="sub_einstellungen.php"><i class="fi-wrench"></i> Einstellungen</a></li>
+				<li class="divider"></li>
 				<li class="active"><a href="main_suche.php" tabindex="1" data-reveal-id="newSatz"><i class="fi-page-add"></i> neuer Satz</a></li>
 				<li class="active"><a href="main_suche.php" tabindex="2" data-reveal-id="newVokabel"><i class="fi-page-add"></i> neue Vokabel</a></li>
-			<!--/ul>
-			<ul class ="right"-->
+				<li class="divider"></li>
+			</ul>
+			<ul class ="right">
+				<li class="has-dropdown">
+					<a>Typ eingrenzen</a>
+					<ul class="dropdown">
+						<li><a href="?typ=%&suchwort=%&uebergabe=suchen">--Alles anzeigen--</a></li>
+						<?php
+							generateListOrdnerAuswahl("typ");
+						?>
+					</ul>
+				</li>
+				<li class="divider"></li>
 				<li class="has-form">
 					<div class="row collapse">
-						<div class="large-12 small-12 columns">
-							<form action="main_suche.php" method="POST" class="custom">
-								<input name="suchwort" type="text" placeholder="Suche">
-								<input type="hidden" name="uebergabe" value="suchen">
-							</form>
-						</div>
+						<form action="main_suche.php" method="POST" class="custom">
+							<input name="suchwort" type="text" placeholder="Suche">
+							<input type="hidden" name="uebergabe" value="suchen">
+						</form>
 					</div>
 				</li>
 			</ul>
 		</section>
 	</nav>
+
+<div class="row">
+	<div class="small-12 large-12 columns"\>
+		<dl class="sub-nav">
+			<?php
+				if($editStatus==0){
+	  				echo "<dd class=\"active\"><a href=\"main_suche.php?editStatus=0\">Show</a></dd>";
+  					echo "<dd><a href=\"main_suche.php?editStatus=1\">Edit</a></dd>";
+				}
+				else {
+	  				echo "<dd><a href=\"main_suche.php?editStatus=0\">Show</a></dd>";
+  					echo "<dd class=\"active\"><a href=\"main_suche.php?editStatus=1\">Edit</a></dd>";
+				}
+			?>
+		</dl>		
+	</div>
+</div>
+
 
 <!-- ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- -->
 <!-- Tabelle -->
@@ -248,7 +286,8 @@
 			<legend>Vokabeln</legend>
 			<?php
 				$abfrage="SELECT * FROM vokabeln 
-					INNER JOIN wortart as wArt ON (vokabeln.wortartID = wArt.wortartID) 
+					INNER JOIN wortart as wArt ON (vokabeln.wortartID = wArt.wortartID)
+					INNER JOIN typ as t ON (t.typID = vokabeln.typID)  
 					WHERE (vokabeln.zeitenID IS NULL 
 						OR vokabeln.zeitenID=1)";
 				$abfrage=$abfrage.$whereClause;
@@ -269,33 +308,76 @@
 					echo "<div class=\"small-6 large-3 columns\">";
 						echo "<a class=\"button expand\" href=\"main_suche.php?changeSort=1&sort=deutsch&sortBy=".$sortBy."\">deutsch</a>";
 					echo "</div>";
-					echo "<div class=\"small-6 large-3 columns\">";
+					echo "<div class=\"small-6 large-2 columns\">";
 						echo "<a class=\"button expand\" href=\"main_suche.php?changeSort=1&sort=wArt.wortart&sortBy=".$sortBy."\">Wortart</a>";
 					echo "</div>";
 					echo "<div class=\"small-6 large-2 columns\">";
+						echo "<a class=\"button expand\" href=\"main_suche.php?changeSort=1&sort=t.typ&sortBy=".$sortBy."\">Typ</a>";
+					echo "</div>";
+					echo "<div class=\"small-6 large-1 columns\">";
 						echo "<a class=\"button expand\" href=\"main_suche.php?changeSort=1&sort=richtig&sortBy=".$sortBy."\">Rating</a>";
 					echo "</div>";
 				echo "</div>";
 
-				while($row = mysql_fetch_object($ergebnis)) {
-					echo "<hr>";
-					echo "<div class=\"row\">";
-						echo "<div class=\"small-6 large-1 columns\">";
-							echo "<a href=\"main_suche.php?reset=true\">".$row->id."</a>";
+				if ($editStatus==0) {
+					while($row = mysql_fetch_object($ergebnis)) {
+						echo "<hr>";
+						echo "<div class=\"row\">";
+							echo "<div class=\"small-6 large-1 columns\">";
+								echo "<a href=\"main_suche.php?reset=true\">".$row->id."</a>";
+							echo "</div>";
+							echo "<div class=\"small-6 large-3 columns\">";
+								echo "<a href=\"sub_vokabel.php?wort=".$row->englisch."&sprache=englisch\">".$row->englisch."</a>";
+							echo "</div>";
+							echo "<div class=\"small-6 large-3 columns\">";
+								echo "<a href=\"sub_vokabel.php?wort=".$row->deutsch."&sprache=deutsch\">".$row->deutsch."</a>";
+							echo "</div>";
+							echo "<div class=\"small-6 large-2 columns\">";
+								echo "<a href=\"main_suche.php?reset=true\">".$row->wortart."</a>";
+							echo "</div>";
+							echo "<div class=\"small-6 large-2 columns\">";
+								echo "<a href=\"main_suche.php?reset=true\">".$row->typ."</a>";
+							echo "</div>";
+							echo "<div class=\"small-6 large-1 columns\">";
+								echo "<a href=\"main_suche.php?reset=true\">".$row->richtig."</a>";
+							echo "</div>";
 						echo "</div>";
-						echo "<div class=\"small-6 large-3 columns\">";
-							echo "<a href=\"sub_vokabel.php?wort=".$row->englisch."&sprache=englisch\">".$row->englisch."</a>";
+					}
+				} else {
+					while($row = mysql_fetch_object($ergebnis)) {
+						echo "<div class=\"row collapse\">";
+							echo "<form class=\"custom\" action=\"main_suche.php\" method=\"POST\">";
+								echo "<input type=\"hidden\" name=\"id\" value=\"".$row->id."\"\>";
+								echo "<input type=\"hidden\" name=\"editStatus\" value=\"1\">";
+								echo "<input type=\"hidden\" name=\"suchWort\" value=\"".$suchWort."\">";
+								echo "<input type=\"hidden\" name=\"sortBy\" value=\"".$sortBy."\">";
+//								echo "<input type=\"hidden\" name=\"typ\" value=".$typ.">";
+								echo "<div class=\"small-12 large-6 columns\">";
+									echo "<input type=\"text\" value=\"",$row->englisch,"\" name=\"englischEdit\">";
+								echo "</div>";
+								echo "<div class=\"small-12 large-6 columns\">";
+									echo "<input type=\"text\" value=\"",$row->deutsch,"\" name=\"deutschEdit\">";
+								echo "</div>";
+								echo "<div class=\"small-12 large-6 columns\">";
+									echo "<select name=\"typEdit\">";
+										generateListFormular($row->typID,"typ","typ");
+									echo "</select>";
+								echo "</div>";
+								echo "<div class=\"small-12 large-6 columns\">";
+									echo "<select name=\"wortartEdit\">";
+										generateListFormular($row->wortartID,"wortart","wortart");
+									echo "</select>";
+								echo "</div>";
+								echo "<div class=\"small-6 large-6 columns\">";
+									echo "<button class=\"fi-page-edit secondary size-X expand\" name=\"updateStatus\" value=\"1\" type=\"submit\"></button>";
+								echo "</div>";
+								echo "<div class=\"small-6 large-6 columns\">";
+									echo "<button class=\"fi-page-delete secondary size-X expand\" name=\"deleteStatus\" value=\"1\" type=\"submit\"></button>";
+								echo "</div>";
+								echo "<hr>";
+							echo "</form>";
 						echo "</div>";
-						echo "<div class=\"small-6 large-3 columns\">";
-							echo "<a href=\"sub_vokabel.php?wort=".$row->deutsch."&sprache=deutsch\">".$row->deutsch."</a>";
-						echo "</div>";
-						echo "<div class=\"small-6 large-3 columns\">";
-							echo "<a href=\"main_suche.php?reset=true\">".$row->wortart."</a>";
-						echo "</div>";
-						echo "<div class=\"small-6 large-2 columns\">";
-							echo "<a href=\"main_suche.php?reset=true\">".$row->richtig."</a>";
-						echo "</div>";
-					echo "</div>";
+					}
 				}
 			?>
 			

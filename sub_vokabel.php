@@ -50,7 +50,7 @@
 
 	<?php
 		if ($randomize==1) {
-			$abfrage="SELECT DISTINCT ".$sprache." FROM vokabeln ORDER BY richtig ASC,rand()";// LIMIT 1";			
+			$abfrage="SELECT DISTINCT ".$sprache." FROM vokabeln WHERE typID=".$_SESSION['typ']." ORDER BY richtig ASC,rand()";// LIMIT 1";			
 			$ergebnis=mysql_query($abfrage);
 //			echo $abfrage;
 			$wort=mysql_result($ergebnis,0,0);

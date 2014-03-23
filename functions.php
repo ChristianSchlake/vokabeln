@@ -344,6 +344,18 @@
 
 		}
 	}
+
+	function generateListOrdnerAuswahl($tabelle) {
+		$abfrage="
+			SELECT DISTINCT *
+			FROM ".$tabelle;
+		$ergebnis = mysql_query($abfrage);
+		$spalteX=$tabelle."ID";
+		while($row = mysql_fetch_object($ergebnis)) {
+			echo "<li><a href=\"?",$tabelle,"=",$row->$spalteX,"&uebergabe=suchen\">",$row->$tabelle,"</a></li>";
+		}
+	}
+
 	function abfrageEinstellung($einstellung) {
 		$abfrage="SELECT DISTINCT * FROM einstellungen WHERE name='".$einstellung."' ORDER BY id";
 		$ergebnis = mysql_query($abfrage);

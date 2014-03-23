@@ -37,56 +37,42 @@
 	$editStatus=0;
 	$deleteStatus=0;
 	$suchWert="%";
+	$typ="%";
 	$editWert="";
 	$editNeuerWert="";
 	$tabellenBeschreibung="";
 //	print_r($_GET);
 	foreach ($_GET as $key => $value) {
-		if ($key=="tabelle") {$tabelle=$value;}
-		if ($key=="editWert") {$editWert=$value;}
+		if ($key=="deutsch") {$deutsch=$value;}
+		if ($key=="englisch") {$englisch=$value;}
+		if ($key=="typEdit") {$typEdit=$value;}
+		if ($key=="id"){$id=$value;}
+		if ($key=="typ") {$typ=$value;}
 		if ($key=="suchWert") {$suchWert=$value;}
-		if ($key=="tabellenBeschreibung") {$tabellenBeschreibung=$value;}
 		if ($key=="editStatus" AND $value=="1"){$editStatus=1;}
 		if ($key=="updateStatus" AND $value=="1"){$updateStatus=1;}
 		if ($key=="deleteStatus" AND $value=="1"){$deleteStatus=1;}
-		if ($key=="id"){$updateID=$value;}
-		if ($key=="editNeuerWert"){
-			$editNeuerWert=$value;
-			$suchWert=$value;
-		}
 	}
 	if ($updateStatus==1) {
-		$abfrage="UPDATE ".$tabelle." SET ".$tabelle." =\"".$editWert."\" WHERE ".$tabelle."ID=\"".$updateID."\"";
+		$abfrage="UPDATE saetze SET deutsch=\"".$deutsch."\", englisch=\"".$englisch."\", typID=".$typEdit."  WHERE id=\"".$id."\"";
 		mysql_query($abfrage);
+//		echo $abfrage;
 	}
 
 	if ($deleteStatus==1) {
-		$abfrage="DELETE FROM ".$tabelle." WHERE ".$tabelle."ID=\"".$updateID."\"";
+		$abfrage="DELETE FROM saetze WHERE id=\"".$id."\"";
 		mysql_query($abfrage);
-	}
-	if ($editNeuerWert!="") {
-		$abfrage="INSERT INTO ".$tabelle." (".$tabelle.") VALUES (\"".$editNeuerWert."\")";
-		mysql_query($abfrage);
-	}
-	
-	
+//		echo $abfrage;
+	}	
 ?>
 
 <nav class="top-bar" data-topbar data-options="is_hover:true">
 	<ul class="title-area">
 		<li class="name">
-			<?php
-				echo "<h1><a href=\"main_suche.php?aufruf=1\"><i class=\"fi-refresh \"></i> ".$tabellenBeschreibung."</a></h1>";
-			?>			
+			<h1><a href="main_suche.php?aufruf=1"><i class="fi-refresh "></i> Sätze verwalten</a></h1>";
 		</li>
 		<li class="toggle-topbar menu-icon"><a href="#"><span>Menu</span></a></li>
 	</ul>
-	<section class="top-bar-section">
-		<ul class="left">
-			<li class="active"><a href="sub_verwalte_auswahl.php" data-reveal-id="eingabeModal"><i class="fi-page-add"></i> neuer Eintrag</a></li>
-		</ul>
-	</section>
-
 </nav>
 <!-- ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- -->
 <!-- Suchformular -->
@@ -95,16 +81,26 @@
 		<?php
 			echo "<legend>".$tabellenBeschreibung."</legend>";
 		?>
-		<form action="sub_verwalte_auswahl.php" method="get">
+		<form action="sub_verwalte_saetze.php" method="get">
 			<?php
 				echo "<input type=\"hidden\" name=\"editStatus\" value=\"".$editStatus."\">";
 				echo "<input type=\"hidden\" name=\"tabelle\" value=\"".$tabelle."\"\>";
 				echo "<input type=\"hidden\" name=\"tabellenBeschreibung\" value=\"".$tabellenBeschreibung."\">";
 			?>
-			<div class="small-8 columns">
-				<input type="text" placeholder="Suche" name="suchWert">
+			<div class="small-12 large-5 columns">
+			<?php
+				echo "<input type=\"text\" placeholder=\"Suche\" name=\"suchWert\" value=\"".$suchWert."\">";
+			?>
 			</div>
-			<div class="small-4 columns">
+			<div class="small-12 large-5 columns">
+				<select tabindex="4" name="typ">
+					<option value="%">%</option>
+					<?php
+						generateListFormular("-","typ","typ");
+					?>
+				</select>
+			</div>
+			<div class="small-2 columns">
 				<input class="button prefix secondary" value="suchen" type="Submit">
 			</div>
 		</form>		
@@ -119,12 +115,12 @@
 		<dl class="sub-nav">
 			<?php
 				if($editStatus==0){
-	  				echo "<dd class=\"active\"><a href=\"sub_verwalte_auswahl.php?tabellenBeschreibung=".$tabellenBeschreibung."&suchWert=".$suchWert."&editStatus=0&tabelle=".$tabelle."\">Show</a></dd>";
-  					echo "<dd><a href=\"sub_verwalte_auswahl.php?tabellenBeschreibung=".$tabellenBeschreibung."&suchWert=".$suchWert."&editStatus=1&tabelle=".$tabelle."\">Edit</a></dd>";
+	  				echo "<dd class=\"active\"><a href=\"sub_verwalte_saetze.php?tabellenBeschreibung=".$tabellenBeschreibung."&suchWert=".$suchWert."&editStatus=0&tabelle=".$tabelle."\">Show</a></dd>";
+  					echo "<dd><a href=\"sub_verwalte_saetze.php?tabellenBeschreibung=".$tabellenBeschreibung."&suchWert=".$suchWert."&editStatus=1&tabelle=".$tabelle."\">Edit</a></dd>";
 				}
 				else {
-	  				echo "<dd><a href=\"sub_verwalte_auswahl.php?tabellenBeschreibung=".$tabellenBeschreibung."&suchWert=".$suchWert."&editStatus=0&tabelle=".$tabelle."\">Show</a></dd>";
-  					echo "<dd class=\"active\"><a href=\"sub_verwalte_auswahl.php?tabellenBeschreibung=".$tabellenBeschreibung."&suchWert=".$suchWert."&editStatus=1&tabelle=".$tabelle."\">Edit</a></dd>";
+	  				echo "<dd><a href=\"sub_verwalte_saetze.php?tabellenBeschreibung=".$tabellenBeschreibung."&suchWert=".$suchWert."&editStatus=0&tabelle=".$tabelle."\">Show</a></dd>";
+  					echo "<dd class=\"active\"><a href=\"sub_verwalte_saetze.php?tabellenBeschreibung=".$tabellenBeschreibung."&suchWert=".$suchWert."&editStatus=1&tabelle=".$tabelle."\">Edit</a></dd>";
 				}
 			?>
 		</dl>		
@@ -144,43 +140,54 @@
 
 <?php
 	$spalteX=$tabelle."ID";
-	$abfrage="
-		SELECT DISTINCT ".$spalteX.",".$tabelle."
-		FROM ".$tabelle."
-		WHERE ".$tabelle." LIKE \"%".$suchWert."%\"
-		ORDER BY upper(".$tabelle.")
-	";
+	$abfrage="SELECT * FROM saetze INNER JOIN typ AS t ON t.typID = saetze.typID 
+		WHERE (deutsch LIKE \"%".$suchWert."%\" 
+		OR englisch LIKE \"%".$suchWert."%\") 
+		AND t.typID LIKE \"".$typ."\"";
+//	echo $abfrage;
 	$ergebnis = mysql_query($abfrage);
 	if($editStatus==0){							
 		while($row = mysql_fetch_object($ergebnis))
 		{
 			echo "<div class=\"row collapse\">";
-				echo "<div class=\"small-1 large-1 columns\">";
-					echo "<p>",$row->$spalteX,"</p>";
+				echo "<div class=\"small-12 large-4 columns\">";
+					echo "<p>",$row->deutsch,"</p>";
 				echo "</div>";
-				echo "<div class=\"small-11 large-11 columns\">";
-					echo "<p>",$row->$tabelle,"</p>";
+				echo "<div class=\"small-12 large-4 columns\">";
+					echo "<p>",$row->englisch,"</p>";
 				echo "</div>";
+				echo "<div class=\"small-12 large-4 columns\">";
+					echo "<p>",$row->typ,"</p>";
+				echo "</div>";
+				echo "<hr>";
 			echo "</div>";
 		}
 	} else {
 		while($row = mysql_fetch_object($ergebnis)) {
 			echo "<div class=\"row collapse\">";
-				echo "<form class=\"custom\" action=\"sub_verwalte_auswahl.php\" method=\"get\">";
-					echo "<input type=\"hidden\" name=\"id\" value=\"".$row->$spalteX."\"\>";
+				echo "<form class=\"custom\" action=\"sub_verwalte_saetze.php\" method=\"get\">";
+					echo "<input type=\"hidden\" name=\"id\" value=\"".$row->id."\"\>";
 					echo "<input type=\"hidden\" name=\"editStatus\" value=\"1\">";
-					echo "<input type=\"hidden\" name=\"tabelle\" value=\"".$tabelle."\"\>";
-					echo "<input type=\"hidden\" name=\"tabellenbeschreibung\" value=\"".$tabellenbeschreibung."\"\>";
-					echo "<div class=\"small-2 large-2 columns\">";
-						echo "<p>",$row->$spalteX,"</p>";
+					echo "<input type=\"hidden\" name=\"suchWert\" value=\"".$suchWert."\">";
+					echo "<input type=\"hidden\" name=\"typ\" value=".$typ.">";
+					echo "<div class=\"small-12 large-12 columns\">";
+						echo "<input type=\"text\" value=\"",$row->deutsch,"\" name=\"deutsch\">";
 					echo "</div>";
-					echo "<div class=\"small-4 large-4 columns\">";
-						echo "<input type=\"text\" value=\"",$row->$tabelle,"\" name=\"editWert\">";
+					echo "<div class=\"small-12 large-12 columns\">";
+						echo "<input type=\"text\" value=\"",$row->englisch,"\" name=\"englisch\">";
+					echo "</div>";
+					echo "<div class=\"small-12 large-12 columns\">";
+						echo "<select name=\"typEdit\">";
+							generateListFormular($row->typID,"typ","typ");
+						echo "</select>";
 					echo "</div>";
 					echo "<div class=\"small-6 large-6 columns\">";
-						echo "<button class=\"fi-page-edit secondary size-X\" name=\"updateStatus\" value=\"1\" type=\"submit\"></button>";
-						echo "<button class=\"fi-page-delete secondary size-X\" name=\"deleteStatus\" value=\"1\" type=\"submit\"></button>";
+						echo "<button class=\"fi-page-edit secondary size-X expand\" name=\"updateStatus\" value=\"1\" type=\"submit\"></button>";
 					echo "</div>";
+					echo "<div class=\"small-6 large-6 columns\">";
+						echo "<button class=\"fi-page-delete secondary size-X expand\" name=\"deleteStatus\" value=\"1\" type=\"submit\"></button>";
+					echo "</div>";
+					echo "<hr>";
 				echo "</form>";
 			echo "</div>";
 		}
@@ -189,7 +196,7 @@
 <div class="row">
 	<div id="eingabeModal" class="reveal-modal" data-reveal>
 		<!--fieldset-->
-			<form action="sub_verwalte_auswahl.php" method="GET" class="custom">
+			<form action="sub_verwalte_saetze.php" method="GET" class="custom">
 				<div class="row collapse">
 					<?php
 						echo "<h1 class=\"subheader\">Eingabeformular - ".$tabellenBeschreibung."</h1>";
