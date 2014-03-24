@@ -4,6 +4,10 @@
 	include("functions.php");
 ?>
 
+<?php
+	echo $_SESSION['typ'];
+?>
+
 <head>
 	<meta http-equiv="content-type" content="text/html; charset=utf8"/>
 	<meta name="viewport" content="width=device-width">
@@ -50,7 +54,7 @@
 
 	<?php
 		if ($randomize==1) {
-			$abfrage="SELECT DISTINCT ".$sprache." FROM vokabeln WHERE typID=".$_SESSION['typ']." ORDER BY richtig ASC,rand()";// LIMIT 1";			
+			$abfrage="SELECT DISTINCT ".$sprache." FROM vokabeln WHERE typID LIKE \"".$_SESSION['typ']."\" ORDER BY richtig ASC,rand()";// LIMIT 1";			
 			$ergebnis=mysql_query($abfrage);
 //			echo $abfrage;
 			$wort=mysql_result($ergebnis,0,0);

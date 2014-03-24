@@ -144,7 +144,6 @@
 		}
 	}
 
-
 // Neuer Satz
 	if ($neuerSatz==1) {				
 		$aufruf="INSERT INTO saetze (deutsch,englisch,typ) VALUES (\"".$deutsch."\",\"".$englisch."\",".$typ.")";
