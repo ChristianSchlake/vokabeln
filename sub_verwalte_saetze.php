@@ -1,7 +1,7 @@
 <?php
 //	session_start();
 	include("sub_init_database.php");
-	include("functions.php");
+	include("functions.php");	
 ?>
 
 <head>
@@ -41,6 +41,7 @@
 	$editWert="";
 	$editNeuerWert="";
 	$tabellenBeschreibung="";
+	$exportAnsicht=abfrageEinstellung("exportansicht");
 //	print_r($_GET);
 	foreach ($_GET as $key => $value) {
 		if ($key=="deutsch") {$deutsch=$value;}
@@ -65,15 +66,18 @@
 //		echo $abfrage;
 	}	
 ?>
+	<?php
+		include("sub_hauptmenu.php");
+	?>
 
-<nav class="top-bar" data-topbar data-options="is_hover:true">
+<!--nav class="top-bar" data-topbar data-options="is_hover:true">
 	<ul class="title-area">
 		<li class="name">
 			<h1><a href="main_suche.php?aufruf=1"><i class="fi-refresh "></i> Sätze verwalten</a></h1>";
 		</li>
 		<li class="toggle-topbar menu-icon"><a href="#"><span>Menu</span></a></li>
 	</ul>
-</nav>
+</nav-->
 <!-- ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- -->
 <!-- Suchformular -->
 <div class="row collapse">
@@ -146,53 +150,67 @@
 		AND t.typID LIKE \"".$typ."\"";
 //	echo $abfrage;
 	$ergebnis = mysql_query($abfrage);
-	if($editStatus==0){							
-		while($row = mysql_fetch_object($ergebnis))
-		{
-			echo "<div class=\"row collapse\">";
-				echo "<div class=\"small-12 large-4 columns\">";
-					echo "<p>",$row->deutsch,"</p>";
-				echo "</div>";
-				echo "<div class=\"small-12 large-4 columns\">";
-					echo "<p>",$row->englisch,"</p>";
-				echo "</div>";
-				echo "<div class=\"small-12 large-4 columns\">";
-					echo "<p>",$row->typ,"</p>";
-				echo "</div>";
-				echo "<hr>";
-			echo "</div>";
-		}
-	} else {
-		while($row = mysql_fetch_object($ergebnis)) {
-			echo "<div class=\"row collapse\">";
-				echo "<form class=\"custom\" action=\"sub_verwalte_saetze.php\" method=\"get\">";
-					echo "<input type=\"hidden\" name=\"id\" value=\"".$row->id."\"\>";
-					echo "<input type=\"hidden\" name=\"editStatus\" value=\"1\">";
-					echo "<input type=\"hidden\" name=\"suchWert\" value=\"".$suchWert."\">";
-					echo "<input type=\"hidden\" name=\"typ\" value=".$typ.">";
-					echo "<div class=\"small-12 large-12 columns\">";
-						echo "<input type=\"text\" value=\"",$row->deutsch,"\" name=\"deutsch\">";
+	if ($exportAnsicht==0) {
+		if($editStatus==0){							
+			while($row = mysql_fetch_object($ergebnis))
+			{
+				echo "<div class=\"row collapse\">";
+					echo "<div class=\"small-12 large-4 columns\">";
+						echo "<p>",$row->deutsch,"</p>";
 					echo "</div>";
-					echo "<div class=\"small-12 large-12 columns\">";
-						echo "<input type=\"text\" value=\"",$row->englisch,"\" name=\"englisch\">";
+					echo "<div class=\"small-12 large-4 columns\">";
+						echo "<p>",$row->englisch,"</p>";
 					echo "</div>";
-					echo "<div class=\"small-12 large-12 columns\">";
-						echo "<select name=\"typEdit\">";
-							generateListFormular($row->typID,"typ","typ");
-						echo "</select>";
-					echo "</div>";
-					echo "<div class=\"small-6 large-6 columns\">";
-						echo "<button class=\"fi-page-edit secondary size-X expand\" name=\"updateStatus\" value=\"1\" type=\"submit\"></button>";
-					echo "</div>";
-					echo "<div class=\"small-6 large-6 columns\">";
-						echo "<button class=\"fi-page-delete secondary size-X expand\" name=\"deleteStatus\" value=\"1\" type=\"submit\"></button>";
+					echo "<div class=\"small-12 large-4 columns\">";
+						echo "<p>",$row->typ,"</p>";
 					echo "</div>";
 					echo "<hr>";
-				echo "</form>";
-			echo "</div>";
+				echo "</div>";
+			}
+		} else {
+			while($row = mysql_fetch_object($ergebnis)) {
+				echo "<div class=\"row collapse\">";
+					echo "<form class=\"custom\" action=\"sub_verwalte_saetze.php\" method=\"get\">";
+						echo "<input type=\"hidden\" name=\"id\" value=\"".$row->id."\"\>";
+						echo "<input type=\"hidden\" name=\"editStatus\" value=\"1\">";
+						echo "<input type=\"hidden\" name=\"suchWert\" value=\"".$suchWert."\">";
+						echo "<input type=\"hidden\" name=\"typ\" value=".$typ.">";
+						echo "<div class=\"small-12 large-12 columns\">";
+							echo "<input type=\"text\" value=\"",$row->deutsch,"\" name=\"deutsch\">";
+						echo "</div>";
+						echo "<div class=\"small-12 large-12 columns\">";
+							echo "<input type=\"text\" value=\"",$row->englisch,"\" name=\"englisch\">";
+						echo "</div>";
+						echo "<div class=\"small-12 large-12 columns\">";
+							echo "<select name=\"typEdit\">";
+								generateListFormular($row->typID,"typ","typ");
+							echo "</select>";
+						echo "</div>";
+						echo "<div class=\"small-6 large-6 columns\">";
+							echo "<button class=\"fi-page-edit secondary size-X expand\" name=\"updateStatus\" value=\"1\" type=\"submit\"></button>";
+						echo "</div>";
+						echo "<div class=\"small-6 large-6 columns\">";
+							echo "<button class=\"fi-page-delete secondary size-X expand\" name=\"deleteStatus\" value=\"1\" type=\"submit\"></button>";
+						echo "</div>";
+						echo "<hr>";
+					echo "</form>";
+				echo "</div>";
+			}
 		}
+	} else {
+		echo "<div class=\"row collapse\">";
+			echo "<fieldset>";
+				echo "<legend>Exportansicht</legend>";
+				$ergebnis = mysql_query($abfrage);
+				while($row = mysql_fetch_object($ergebnis)) {
+					echo "<p>".$row->englisch.";".$row->deutsch.";".$row->typ."<br></p>";
+				}
+			echo "</fieldset>";
+		echo "</div>";
 	}
 ?>
+
+
 <div class="row">
 	<div id="eingabeModal" class="reveal-modal" data-reveal>
 		<!--fieldset-->

@@ -63,7 +63,7 @@
 	}	
 ?>
 
-<nav class="top-bar" data-topbar data-options="is_hover:true">
+<!--nav class="top-bar" data-topbar data-options="is_hover:true">
 	<ul class="title-area">
 		<li class="name">
 			<h1><a href="main_suche.php?reset=true"><i class="fi-refresh"></i> Einstellungen</a></h1>
@@ -75,7 +75,10 @@
 	        <li class="divider hide-for-small"></li>
 		</ul>
 	</section>
-</nav>
+</nav-->
+	<?php
+		include("sub_hauptmenu.php");
+	?>
 
 <!-- ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- -->
 <!-- Tabelle anzeigen -->

@@ -4,10 +4,6 @@
 	include("functions.php");
 ?>
 
-<?php
-	echo $_SESSION['typ'];
-?>
-
 <head>
 	<meta http-equiv="content-type" content="text/html; charset=utf8"/>
 	<meta name="viewport" content="width=device-width">
@@ -60,23 +56,16 @@
 			$wort=mysql_result($ergebnis,0,0);
 		}
 	?>
-
-	<nav class="top-bar" data-topbar>
+	<?php
+		include("sub_hauptmenu.php");
+	?>
+	<!--nav class="top-bar" data-topbar>
 		<ul class="title-area">
 			<li class="name"><h1><a href="main_suche.php?reset=true">Vokabeltrainer</a></h1></li>
 			<li class="toggle-topbar menu-icon"><a href="#">Menu</a></li>
 		</ul>
 		<section class="top-bar-section">
 			<ul class="left">
-			    <!--li class="divider"></li>
-			    <li class="divider"></li>
-			    <li class="has-dropdown"><a href="#"><i class="fi-list "></i> Listen verwalten</a>
-			            <ul class="dropdown">
-							<li><a href="sub_verwalte_auswahl.php?editStatus=0&tabelle=zeiten&tabellenBeschreibung=Zeiten">Zeiten</a></li>
-							<li><a href="sub_verwalte_auswahl.php?editStatus=0&tabelle=wortart&tabellenBeschreibung=Wortart">Wortart</a></li>
-							<li><a href="sub_verwalte_auswahl.php?editStatus=0&tabelle=verben&tabellenBeschreibung=Verben">Verben</a></li>
-			            </ul>
-			    </li-->
 			    <li class="divider"></li>
 			    <li class="has-dropdown"><a href="#"><i class="fi-list "></i> Vokabeln lernen</a>
 			            <ul class="dropdown">
@@ -84,13 +73,29 @@
 							<li><a href="sub_vokabel.php?rand=1&sprache=deutsch"><i class="fi-wrench"></i> Deutsch übersetzen</a></li>
 			            </ul>
 			    </li>
-			    <!--li class="divider"></li>
-				<li><a href="sub_einstellungen.php"><i class="fi-wrench"></i> Einstellungen</a></li>
-				<li class="active"><a href="main_suche.php" data-reveal-id="newSatz"><i class="fi-page-add"></i> neuer Satz</a></li>
-				<li class="active"><a href="main_suche.php" data-reveal-id="newVokabel"><i class="fi-page-add"></i> neue Vokabel</a></li-->
+			</ul>
+			<ul class ="right">
+				<li class="has-dropdown">
+					<a>Typ eingrenzen</a>
+					<ul class="dropdown">
+						<li><a href="?typ=%&suchwort=%&uebergabe=suchen">--Alles anzeigen--</a></li>
+						<?php
+							generateListOrdnerAuswahl("typ");
+						?>
+					</ul>
+				</li>
+				<li class="divider"></li>
+				<li class="has-form">
+					<div class="row collapse">
+						<form action="main_suche.php" method="POST" class="custom">
+							<input name="suchwort" type="text" placeholder="Suche">
+							<input type="hidden" name="uebergabe" value="suchen">
+						</form>
+					</div>
+				</li>
 			</ul>
 		</section>
-	</nav>
+	</nav-->
 
 	<?php
 		$deu="deutsch";
@@ -216,7 +221,7 @@
 
 
 	<?php
-		if ($ergebnisVokabelraten==-1) {
+		if ($randomize!=1) {
 			$abfrage="SELECT verb.verbenID FROM vokabeln INNER JOIN verben as verb ON (verb.verbenID = vokabeln.verbenID) INNER JOIN zeiten as zeit ON (zeit.zeitenID = vokabeln.zeitenID) WHERE vokabeln.".$sprache."=\"".$wort."\" ORDER BY zeit.zeitenID";
 			$ergebnis = mysql_query($abfrage);
 			$menge = mysql_fetch_row($ergebnis);

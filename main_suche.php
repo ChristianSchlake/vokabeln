@@ -60,6 +60,7 @@
 /*-- ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- -*/
 /* Variablen eintragen */
 	$maxEintraegeProSite=abfrageEinstellung("maxEintraegeProSite");
+	$exportAnsicht=abfrageEinstellung("exportansicht");
 /*	$neuerEintrag=0;
 	$suchEintrag=0;
 	$updateEintrag=0;
@@ -146,7 +147,7 @@
 
 // Neuer Satz
 	if ($neuerSatz==1) {				
-		$aufruf="INSERT INTO saetze (deutsch,englisch,typ) VALUES (\"".$deutsch."\",\"".$englisch."\",".$typ.")";
+		$aufruf="INSERT INTO saetze (deutsch,englisch,typID) VALUES (\"".$deutsch."\",\"".$englisch."\",".$typ.")";
 		$eintragen = mysql_query($aufruf);
 //		echo $aufruf;
 	}	
@@ -190,8 +191,9 @@
 	}
 
 // Suchen
-//	if ($suchEintrag==1) {
+	if ($suchEintrag==1) {
 		$_SESSION['startPage'] ="0";
+	}
 		if ($_SESSION['suchwort']!="%") {
 			$whereClause=$whereClause." 
 				AND (vokabeln.englisch LIKE \"%".$_SESSION['suchwort']."%\" 
@@ -201,12 +203,14 @@
 			$whereClause=$whereClause." 
 				AND (vokabeln.typID LIKE ".$_SESSION['typ'].") "; 
 		}
-//	}
 ?>
 
 <!-- ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- -->
 <!-- Navigationsleiste anzeigen -->
-	<nav class="top-bar" data-topbar>
+	<?php
+		include("sub_hauptmenu.php");
+	?>
+	<!--nav class="top-bar" data-topbar>
 		<ul class="title-area">
 			<li class="name"><h1><a href="main_suche.php?reset=true">Vokabeltrainer</a></h1></li>
 			<li class="toggle-topbar menu-icon"><a href="#">Menu</a></li>
@@ -258,7 +262,7 @@
 				</li>
 			</ul>
 		</section>
-	</nav>
+	</nav-->
 
 <div class="row">
 	<div class="small-12 large-12 columns"\>
@@ -280,127 +284,172 @@
 
 <!-- ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- -->
 <!-- Tabelle -->
-	<div class="row">
-		<fieldset>
-			<legend>Vokabeln</legend>
-			<?php
-				$abfrage="SELECT * FROM vokabeln 
-					INNER JOIN wortart as wArt ON (vokabeln.wortartID = wArt.wortartID)
-					INNER JOIN typ as t ON (t.typID = vokabeln.typID)  
-					WHERE (vokabeln.zeitenID IS NULL 
-						OR vokabeln.zeitenID=1)";
-				$abfrage=$abfrage.$whereClause;
-				$abfrage=$abfrage." ORDER BY ".$sort." ".$sortBy;
-				$ergebnis = mysql_query($abfrage);
-				$menge = mysql_num_rows($ergebnis);
+	<?php
+		$abfrage="SELECT * FROM vokabeln 
+			INNER JOIN wortart as wArt ON (vokabeln.wortartID = wArt.wortartID)
+			INNER JOIN typ as t ON (t.typID = vokabeln.typID)  
+			WHERE (vokabeln.zeitenID IS NULL 
+				OR vokabeln.zeitenID=1)";
+		$abfrage=$abfrage.$whereClause;
+		$abfrage=$abfrage." ORDER BY ".$sort." ".$sortBy;
+		$ergebnis = mysql_query($abfrage);
+		$menge = mysql_num_rows($ergebnis);
 
-				$abfrage=$abfrage." LIMIT ".$_SESSION['startPage'].",".$maxEintraegeProSite;
-				$ergebnis = mysql_query($abfrage);
-//				echo $abfrage;
-				echo "<div class=\"row\">";
-					echo "<div class=\"small-6 large-1 columns\">";
-						echo "<a class=\"button expand\" href=\"main_suche.php?changeSort=1&sort=id&sortBy=".$sortBy."\">ID</a>";
+		$abfrage=$abfrage." LIMIT ".$_SESSION['startPage'].",".$maxEintraegeProSite;
+//		echo $abfrage;
+		if ($exportAnsicht==0) {
+	?>
+		<div class="row">
+			<fieldset>
+				<legend>Vokabeln</legend>
+				<?php
+					$ergebnis = mysql_query($abfrage);
+					echo "<div class=\"row\">";
+						echo "<div class=\"small-6 large-1 columns\">";
+							echo "<a class=\"button expand\" href=\"main_suche.php?changeSort=1&sort=id&sortBy=".$sortBy."\">ID</a>";
+						echo "</div>";
+						echo "<div class=\"small-6 large-3 columns\">";
+							echo "<a class=\"button expand\" href=\"main_suche.php?changeSort=1&sort=englisch&sortBy=".$sortBy."\">englisch</a>";
+						echo "</div>";
+						echo "<div class=\"small-6 large-3 columns\">";
+							echo "<a class=\"button expand\" href=\"main_suche.php?changeSort=1&sort=deutsch&sortBy=".$sortBy."\">deutsch</a>";
+						echo "</div>";
+						echo "<div class=\"small-6 large-2 columns\">";
+							echo "<a class=\"button expand\" href=\"main_suche.php?changeSort=1&sort=wArt.wortart&sortBy=".$sortBy."\">Wortart</a>";
+						echo "</div>";
+						echo "<div class=\"small-6 large-2 columns\">";
+							echo "<a class=\"button expand\" href=\"main_suche.php?changeSort=1&sort=t.typ&sortBy=".$sortBy."\">Typ</a>";
+						echo "</div>";
+						echo "<div class=\"small-6 large-1 columns\">";
+							echo "<a class=\"button expand\" href=\"main_suche.php?changeSort=1&sort=richtig&sortBy=".$sortBy."\">Rating</a>";
+						echo "</div>";
 					echo "</div>";
-					echo "<div class=\"small-6 large-3 columns\">";
-						echo "<a class=\"button expand\" href=\"main_suche.php?changeSort=1&sort=englisch&sortBy=".$sortBy."\">englisch</a>";
-					echo "</div>";
-					echo "<div class=\"small-6 large-3 columns\">";
-						echo "<a class=\"button expand\" href=\"main_suche.php?changeSort=1&sort=deutsch&sortBy=".$sortBy."\">deutsch</a>";
-					echo "</div>";
-					echo "<div class=\"small-6 large-2 columns\">";
-						echo "<a class=\"button expand\" href=\"main_suche.php?changeSort=1&sort=wArt.wortart&sortBy=".$sortBy."\">Wortart</a>";
-					echo "</div>";
-					echo "<div class=\"small-6 large-2 columns\">";
-						echo "<a class=\"button expand\" href=\"main_suche.php?changeSort=1&sort=t.typ&sortBy=".$sortBy."\">Typ</a>";
-					echo "</div>";
-					echo "<div class=\"small-6 large-1 columns\">";
-						echo "<a class=\"button expand\" href=\"main_suche.php?changeSort=1&sort=richtig&sortBy=".$sortBy."\">Rating</a>";
-					echo "</div>";
-				echo "</div>";
 
-				if ($editStatus==0) {
-					while($row = mysql_fetch_object($ergebnis)) {
-						echo "<hr>";
-						echo "<div class=\"row\">";
-							echo "<div class=\"small-6 large-1 columns\">";
-								echo "<a href=\"main_suche.php?reset=true\">".$row->id."</a>";
+					if ($editStatus==0) {
+						while($row = mysql_fetch_object($ergebnis)) {
+							echo "<hr>";
+							echo "<div class=\"row\">";
+								echo "<div class=\"small-6 large-1 columns\">";
+									echo "<a href=\"main_suche.php?reset=true\">".$row->id."</a>";
+								echo "</div>";
+								echo "<div class=\"small-6 large-3 columns\">";
+									echo "<a href=\"sub_vokabel.php?wort=".$row->englisch."&sprache=englisch\">".$row->englisch."</a>";
+								echo "</div>";
+								echo "<div class=\"small-6 large-3 columns\">";
+									echo "<a href=\"sub_vokabel.php?wort=".$row->deutsch."&sprache=deutsch\">".$row->deutsch."</a>";
+								echo "</div>";
+								echo "<div class=\"small-6 large-2 columns\">";
+									echo "<a href=\"main_suche.php?reset=true\">".$row->wortart."</a>";
+								echo "</div>";
+								echo "<div class=\"small-6 large-2 columns\">";
+									echo "<a href=\"main_suche.php?reset=true\">".$row->typ."</a>";
+								echo "</div>";
+								echo "<div class=\"small-6 large-1 columns\">";
+									echo "<a href=\"main_suche.php?reset=true\">".$row->richtig."</a>";
+								echo "</div>";
 							echo "</div>";
-							echo "<div class=\"small-6 large-3 columns\">";
-								echo "<a href=\"sub_vokabel.php?wort=".$row->englisch."&sprache=englisch\">".$row->englisch."</a>";
+						}
+					} else {
+						while($row = mysql_fetch_object($ergebnis)) {
+							echo "<div class=\"row collapse\">";
+								echo "<form class=\"custom\" action=\"main_suche.php\" method=\"POST\">";
+									echo "<input type=\"hidden\" name=\"id\" value=\"".$row->id."\"\>";
+									echo "<input type=\"hidden\" name=\"editStatus\" value=\"1\">";
+									echo "<input type=\"hidden\" name=\"suchWort\" value=\"".$suchWort."\">";
+									echo "<input type=\"hidden\" name=\"sortBy\" value=\"".$sortBy."\">";
+	//								echo "<input type=\"hidden\" name=\"typ\" value=".$typ.">";
+									echo "<div class=\"small-12 large-6 columns\">";
+										echo "<input type=\"text\" value=\"",$row->englisch,"\" name=\"englischEdit\">";
+									echo "</div>";
+									echo "<div class=\"small-12 large-6 columns\">";
+										echo "<input type=\"text\" value=\"",$row->deutsch,"\" name=\"deutschEdit\">";
+									echo "</div>";
+									echo "<div class=\"small-12 large-6 columns\">";
+										echo "<select name=\"typEdit\">";
+											generateListFormular($row->typID,"typ","typ");
+										echo "</select>";
+									echo "</div>";
+									echo "<div class=\"small-12 large-6 columns\">";
+										echo "<select name=\"wortartEdit\">";
+											generateListFormular($row->wortartID,"wortart","wortart");
+										echo "</select>";
+									echo "</div>";
+									echo "<div class=\"small-6 large-6 columns\">";
+										echo "<button class=\"fi-page-edit secondary size-X expand\" name=\"updateStatus\" value=\"1\" type=\"submit\"></button>";
+									echo "</div>";
+									echo "<div class=\"small-6 large-6 columns\">";
+										echo "<button class=\"fi-page-delete secondary size-X expand\" name=\"deleteStatus\" value=\"1\" type=\"submit\"></button>";
+									echo "</div>";
+									echo "<hr>";
+								echo "</form>";
 							echo "</div>";
-							echo "<div class=\"small-6 large-3 columns\">";
-								echo "<a href=\"sub_vokabel.php?wort=".$row->deutsch."&sprache=deutsch\">".$row->deutsch."</a>";
-							echo "</div>";
-							echo "<div class=\"small-6 large-2 columns\">";
-								echo "<a href=\"main_suche.php?reset=true\">".$row->wortart."</a>";
-							echo "</div>";
-							echo "<div class=\"small-6 large-2 columns\">";
-								echo "<a href=\"main_suche.php?reset=true\">".$row->typ."</a>";
-							echo "</div>";
-							echo "<div class=\"small-6 large-1 columns\">";
-								echo "<a href=\"main_suche.php?reset=true\">".$row->richtig."</a>";
-							echo "</div>";
-						echo "</div>";
+						}
 					}
-				} else {
-					while($row = mysql_fetch_object($ergebnis)) {
-						echo "<div class=\"row collapse\">";
-							echo "<form class=\"custom\" action=\"main_suche.php\" method=\"POST\">";
-								echo "<input type=\"hidden\" name=\"id\" value=\"".$row->id."\"\>";
-								echo "<input type=\"hidden\" name=\"editStatus\" value=\"1\">";
-								echo "<input type=\"hidden\" name=\"suchWort\" value=\"".$suchWort."\">";
-								echo "<input type=\"hidden\" name=\"sortBy\" value=\"".$sortBy."\">";
-//								echo "<input type=\"hidden\" name=\"typ\" value=".$typ.">";
-								echo "<div class=\"small-12 large-6 columns\">";
-									echo "<input type=\"text\" value=\"",$row->englisch,"\" name=\"englischEdit\">";
-								echo "</div>";
-								echo "<div class=\"small-12 large-6 columns\">";
-									echo "<input type=\"text\" value=\"",$row->deutsch,"\" name=\"deutschEdit\">";
-								echo "</div>";
-								echo "<div class=\"small-12 large-6 columns\">";
-									echo "<select name=\"typEdit\">";
-										generateListFormular($row->typID,"typ","typ");
-									echo "</select>";
-								echo "</div>";
-								echo "<div class=\"small-12 large-6 columns\">";
-									echo "<select name=\"wortartEdit\">";
-										generateListFormular($row->wortartID,"wortart","wortart");
-									echo "</select>";
-								echo "</div>";
-								echo "<div class=\"small-6 large-6 columns\">";
-									echo "<button class=\"fi-page-edit secondary size-X expand\" name=\"updateStatus\" value=\"1\" type=\"submit\"></button>";
-								echo "</div>";
-								echo "<div class=\"small-6 large-6 columns\">";
-									echo "<button class=\"fi-page-delete secondary size-X expand\" name=\"deleteStatus\" value=\"1\" type=\"submit\"></button>";
-								echo "</div>";
-								echo "<hr>";
-							echo "</form>";
-						echo "</div>";
-					}
-				}
-			?>
+				?>
 			
-			<div class="row">
-				<hr>
-				<div class="pagination-centered">
-					<ul class="pagination">
-						<?php
-							echo "<li class=\"arrow\"><a href=\"main_suche.php?startPage=",$_SESSION['startPage']-$maxEintraegeProSite,"\">&laquo;</a></li>";
-							for ($i=0; $i < $menge; $i=$i+$maxEintraegeProSite) { 								
-								if($i>=$_SESSION['startPage'] and $i <$_SESSION['startPage']+$maxEintraegeProSite){
-									echo "<li class=\"current\"><a href=\"main_suche.php?sort=".$sort."&sortBy=".$sortBy."&startPage=",$i,"\">",$i,"</a></li>";
+				<div class="row">
+					<hr>
+					<div class="pagination-centered">
+						<ul class="pagination">
+							<?php
+								echo "<li class=\"arrow\"><a href=\"main_suche.php?startPage=",$_SESSION['startPage']-$maxEintraegeProSite,"\">&laquo;</a></li>";
+								for ($i=0; $i < $menge; $i=$i+$maxEintraegeProSite) { 								
+									if($i>=$_SESSION['startPage'] and $i <$_SESSION['startPage']+$maxEintraegeProSite){
+										echo "<li class=\"current\"><a href=\"main_suche.php?sort=".$sort."&sortBy=".$sortBy."&startPage=",$i,"\">",$i,"</a></li>";
+									}
+									else{
+										echo "<li><a href=\"main_suche.php?sort=".$sort."&sortBy=".$sortBy."&startPage=",$i,"\">",$i,"</a></li>";
+									}
 								}
-								else{
-									echo "<li><a href=\"main_suche.php?sort=".$sort."&sortBy=".$sortBy."&startPage=",$i,"\">",$i,"</a></li>";
-								}
-							}
-							echo "<li class=\"arrow\"><a href=\"main_suche.php?sort=".$sort."&sortBy=".$sortBy."&startPage=",$_SESSION['startPage']+$maxEintraegeProSite,"\">&raquo;</a></li>";							
-						?>
-					</ul>
+								echo "<li class=\"arrow\"><a href=\"main_suche.php?sort=".$sort."&sortBy=".$sortBy."&startPage=",$_SESSION['startPage']+$maxEintraegeProSite,"\">&raquo;</a></li>";							
+							?>
+						</ul>
+					</div>
 				</div>
-			</div>
-		</fieldset>
-	<div>
+			</fieldset>
+		<div>
+	<?php
+		}
+		if ($exportAnsicht==1) {
+	?>
+		<!-- ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- -->
+		<!-- Exportansicht -->
+			<div class="row">
+				<fieldset>
+					<legend>Exportansicht</legend>
+					<?php
+						$ergebnis = mysql_query($abfrage);
+						while($row = mysql_fetch_object($ergebnis)) {
+							echo "<p>".$row->id.";".$row->englisch.";".$row->deutsch.";".$row->wortart.";".$row->typ.";".$row->richtig."<br></p>";
+						}
+					?>
+			
+					<div class="row">
+						<hr>
+						<div class="pagination-centered">
+							<ul class="pagination">
+								<?php
+									echo "<li class=\"arrow\"><a href=\"main_suche.php?startPage=",$_SESSION['startPage']-$maxEintraegeProSite,"\">&laquo;</a></li>";
+									for ($i=0; $i < $menge; $i=$i+$maxEintraegeProSite) { 								
+										if($i>=$_SESSION['startPage'] and $i <$_SESSION['startPage']+$maxEintraegeProSite){
+											echo "<li class=\"current\"><a href=\"main_suche.php?sort=".$sort."&sortBy=".$sortBy."&startPage=",$i,"\">",$i,"</a></li>";
+										}
+										else{
+											echo "<li><a href=\"main_suche.php?sort=".$sort."&sortBy=".$sortBy."&startPage=",$i,"\">",$i,"</a></li>";
+										}
+									}
+									echo "<li class=\"arrow\"><a href=\"main_suche.php?sort=".$sort."&sortBy=".$sortBy."&startPage=",$_SESSION['startPage']+$maxEintraegeProSite,"\">&raquo;</a></li>";							
+								?>
+							</ul>
+						</div>
+					</div>
+				</fieldset>
+			<div>
+	<?php
+		}
+	?>
+
+
 
 	<!-- neuer Satz -->
 	<div id="newSatz" class="reveal-modal" data-reveal>
